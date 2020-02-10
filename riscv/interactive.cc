@@ -12,8 +12,10 @@
 #include <climits>
 #include <cinttypes>
 #include <assert.h>
+#include <err.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sysexits.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -41,8 +43,18 @@ static std::string readline(int fd)
   bool noncanonical = tcgetattr(fd, &tios) == 0 && (tios.c_lflag & ICANON) == 0;
 
   std::string s;
-  for (char ch; read(fd, &ch, 1) == 1; )
+  while (true)
   {
+    int ch = getc(stdin);
+    if (ch == EOF) {
+      if (feof(stdin)) {
+        fprintf(stderr, "\nReceived EOF. Hit CTRL+C twice to exit (ctrlc_pressed=%d)\n", ctrlc_pressed);
+        clearerr(stdin);
+        break;
+      }
+      assert(ferror(stdin));
+      err(EX_OSERR, "Failed to read from stdin");
+    }
     if (ch == '\x7f')
     {
       if (s.empty())
@@ -94,7 +106,7 @@ void sim_t::interactive()
   while (!done())
   {
     std::cerr << ": " << std::flush;
-    std::string s = readline(2);
+    std::string s = readline(STDERR_FILENO);
 
     std::stringstream ss(s);
     std::string cmd, tmp;
