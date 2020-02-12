@@ -212,10 +212,14 @@ void rvfi_dii_t::read_trace(rvfi_dii_command_t *input)
 
 void rvfi_dii_t::write_trace(rvfi_dii_trace_t *output)
 {
+  sleep(0.001);
   ssize_t bytes = write(client_fd, output, sizeof(rvfi_dii_trace_t));
   if (bytes == -1) {
-    fprintf(stderr, "failed to write to socket: %s (%d)\n", strerror(errno), errno);
-    abort();
-
+    sleep(1);
+    bytes = write(client_fd, output, sizeof(rvfi_dii_trace_t));
+    if (bytes == -1) {
+            fprintf(stderr, "failed to write to rvfi socket: %s (%d)\n", strerror(errno), errno);
+            abort();
+    }
   }
 }
