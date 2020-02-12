@@ -38,5 +38,5 @@
 #include "trap.h"
 #include <stdlib.h>
 
-DECLARE_TRAP(CAUSE_CHERI_TRAP, cheri_trap)
+DECLARE_MEM_TRAP(CAUSE_CHERI_TRAP, cheri_trap)
 #endif

@@ -162,7 +162,7 @@ class cheri_t : public extension_t {
 
   void raise_trap(reg_t trap_code, reg_t trap_reg) {
     set_ccsr((trap_reg << 10) | (trap_code << 5));
-    throw trap_cheri_trap();
+    throw trap_cheri_trap((trap_reg << 5) | trap_code);
   };
 
   std::vector<insn_desc_t> get_instructions();
