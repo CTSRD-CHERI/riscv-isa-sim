@@ -90,6 +90,8 @@
 # define CS2 READ_CREG(insn.cs2())
 
 # define WRITE_CD(val) WRITE_CREG(insn.cd(), (val))
+# define WRITE_RS2(value) WRITE_REG(insn.rs2(), value)
+# define WRITE_CS2(value) WRITE_CREG(insn.cs2(), value)
 
 #define CHERI_CAPSIZE_BYTES 16
 
@@ -312,6 +314,131 @@ class cheri_t : public extension_t {
     cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC];
     reg_t authidx = 0x20 | CHERI_SCR_DDC;
     cap_store_cap(auth, authidx, addr, val);
+  }
+
+  #define acquire_load_reservation_funcs(type) \
+    inline void cap_acquire_load_reservation_##type( \
+          cheri_reg_t auth, reg_t authidx, reg_t offset) { \
+      reg_t addr = \
+        memop_to_addr(auth, authidx, offset, sizeof(type##_t), /*load=*/true, \
+                      /*store=*/false, /*execute=*/false, /*cap_op=*/false, \
+                      /*store_local=*/false); \
+      MMU.acquire_load_reservation(addr); \
+    } \
+    \
+    inline void ddc_acquire_load_reservation_##type(reg_t addr) { \
+      cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC]; \
+      reg_t authidx = 0x20 | CHERI_SCR_DDC; \
+      cap_acquire_load_reservation_##type(auth, authidx, addr); \
+    }
+
+  acquire_load_reservation_funcs(int8)
+  acquire_load_reservation_funcs(int16)
+  acquire_load_reservation_funcs(int32)
+  acquire_load_reservation_funcs(int64)
+  #undef acquire_load_reservation_funcs
+
+  inline void cap_acquire_load_reservation_cap(cheri_reg_t auth, reg_t authidx,
+                                               reg_t offset) {
+    reg_t addr =
+      memop_to_addr(auth, authidx, offset, sizeof(cheri_reg_inmem_t),
+                    /*load=*/true, /*store=*/false, /*execute=*/false,
+                    /*cap_op=*/true, /*store_local=*/false);
+    MMU.acquire_load_reservation(addr);
+  }
+
+  inline void ddc_acquire_load_reservation_cap(reg_t addr) {
+    cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC];
+    reg_t authidx = 0x20 | CHERI_SCR_DDC;
+    cap_acquire_load_reservation_cap(auth, authidx, addr);
+  }
+
+  #define check_load_reservation_funcs(type) \
+    inline bool cap_check_load_reservation_##type( \
+          cheri_reg_t auth, reg_t authidx, reg_t offset, \
+          type##_t val __attribute__((unused))) { \
+      reg_t addr = \
+        memop_to_addr(auth, authidx, offset, sizeof(type##_t), /*load=*/false, \
+                      /*store=*/true, /*execute=*/false, /*cap_op=*/false, \
+                      /*store_local=*/false); \
+      return MMU.check_load_reservation(addr); \
+    } \
+    \
+    inline bool ddc_check_load_reservation_##type(reg_t addr, type##_t val) { \
+      cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC]; \
+      reg_t authidx = 0x20 | CHERI_SCR_DDC; \
+      return cap_check_load_reservation_##type(auth, authidx, addr, val); \
+    }
+
+  check_load_reservation_funcs(uint8)
+  check_load_reservation_funcs(uint16)
+  check_load_reservation_funcs(uint32)
+  check_load_reservation_funcs(uint64)
+  #undef check_load_reservation_funcs
+
+  inline bool cap_check_load_reservation_cap(cheri_reg_t auth, reg_t authidx,
+                                             reg_t offset, cheri_reg_t val) {
+    bool store_local = val.tag && !(val.perms & BIT(CHERI_PERMIT_GLOBAL));
+    reg_t addr =
+      memop_to_addr(auth, authidx, offset, sizeof(cheri_reg_inmem_t),
+                    /*load=*/false, /*store=*/true, /*execute=*/false,
+                    /*cap_op=*/true, store_local);
+    return MMU.check_load_reservation(addr);
+  }
+
+  inline bool ddc_check_load_reservation_cap(reg_t addr, cheri_reg_t val) {
+    cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC];
+    reg_t authidx = 0x20 | CHERI_SCR_DDC;
+    return cap_check_load_reservation_cap(auth, authidx, addr, val);
+  }
+
+  #define amo_funcs(type) \
+    template<typename op> \
+    inline type##_t cap_amo_##type(cheri_reg_t auth, reg_t authidx, \
+                                   reg_t offset, op f) { \
+      reg_t addr = \
+        memop_to_addr(auth, authidx, offset, sizeof(type##_t), /*load=*/true, \
+                      /*store=*/true, /*execute=*/false, /*cap_op=*/false, \
+                      /*store_local=*/false); \
+      reg_t paddr; \
+      type##_t old = MMU.amo_##type(addr, f, &paddr); \
+      set_tag_translated(paddr, false); \
+      return old; \
+    } \
+    \
+    template<typename op> \
+    inline type##_t ddc_amo_##type(reg_t addr, op f) { \
+      cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC]; \
+      reg_t authidx = 0x20 | CHERI_SCR_DDC; \
+      return cap_amo_##type(auth, authidx, addr, f); \
+    }
+
+  amo_funcs(uint8)
+  amo_funcs(uint16)
+  amo_funcs(uint32)
+  amo_funcs(uint64)
+  #undef amo_funcs
+
+  inline cheri_reg_t cap_amoswap_cap(cheri_reg_t auth, reg_t authidx,
+                                     reg_t offset, cheri_reg_t val) {
+    bool store_local = val.tag && !(val.perms & BIT(CHERI_PERMIT_GLOBAL));
+    reg_t addr =
+      memop_to_addr(auth, authidx, offset, sizeof(cheri_reg_inmem_t),
+                    /*load=*/true, /*store=*/true, /*execute=*/false,
+                    /*cap_op=*/false, store_local);
+    reg_t paddr;
+    cheri_reg_inmem_t inmem = MMU.amo_cheri_reg_inmem(
+      addr, [&](cheri_reg_inmem_t lhs) { return val.inmem(); }, &paddr);
+    bool tag = (auth.perms & BIT(CHERI_PERMIT_LOAD_CAPABILITY)) &&
+               get_tag_translated(paddr);
+    set_tag_translated(paddr, val.tag);
+    return cheri_reg_t(inmem, tag);
+  }
+
+  inline cheri_reg_t ddc_amoswap_cap(reg_t addr, cheri_reg_t val) {
+    cheri_reg_t auth = state.scrs_reg_file[CHERI_SCR_DDC];
+    reg_t authidx = 0x20 | CHERI_SCR_DDC;
+    return cap_amoswap_cap(auth, authidx, addr, val);
   }
 
  private:

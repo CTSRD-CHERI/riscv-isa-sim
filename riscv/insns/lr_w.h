@@ -1,3 +1,3 @@
 require_extension('A');
-MMU.acquire_load_reservation(RS1);
-WRITE_RD(MMU.load_int32(RS1));
+CHERI_MODE_ACQUIRE_LOAD_RESERVATION(int32, insn.rs1(), 0);
+WRITE_RD(CHERI_MODE_LOAD(int32, insn.rs1(), 0));

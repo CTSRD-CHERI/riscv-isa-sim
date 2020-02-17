@@ -225,11 +225,11 @@ public:
   // template for functions that perform an atomic memory operation
   #define amo_func(type) \
     template<typename op> \
-    type##_t amo_##type(reg_t addr, op f) { \
+    type##_t amo_##type(reg_t addr, op f, reg_t *paddr = NULL) { \
       if (addr & (sizeof(type##_t)-1)) \
         throw trap_store_address_misaligned(addr); \
       try { \
-        auto lhs = load_##type(addr); \
+        auto lhs = load_##type(addr, paddr); \
         store_##type(addr, f(lhs)); \
         return lhs; \
       } catch (trap_load_page_fault& t) { \
@@ -277,8 +277,16 @@ public:
   #undef misaligned_store_uint
 
   // perform an atomic memory operation at an aligned address
+#ifdef ENABLE_CHERI
+  amo_func(uint8)
+  amo_func(uint16)
+#endif
   amo_func(uint32)
   amo_func(uint64)
+
+#ifdef ENABLE_CHERI
+  amo_func(cheri_reg_inmem)
+#endif
 
   #undef amo_func
 

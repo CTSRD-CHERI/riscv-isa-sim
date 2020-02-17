@@ -71,6 +71,16 @@ cheri_insn_list = \
 	lwu_cap \
 	lq_cap \
 	ld_cap \
+	lr_b_ddc \
+	lr_h_ddc \
+	lr_w_ddc \
+	lr_d_ddc \
+	lr_q_ddc \
+	lr_b_cap \
+	lr_h_cap \
+	lr_w_cap \
+	lr_d_cap \
+	lr_q_cap \
 	sb_ddc \
 	sh_ddc \
 	sw_ddc \
@@ -81,8 +91,25 @@ cheri_insn_list = \
 	sd_cap \
 	sq_ddc \
 	sq_cap \
+	sc_b_ddc \
+	sc_h_ddc \
+	sc_w_ddc \
+	sc_d_ddc \
+	sc_q_ddc \
+	sc_b_cap \
+	sc_h_cap \
+	sc_w_cap \
+	sc_d_cap \
+	sc_q_cap \
 	lq \
 	sq \
+	lr_q \
+	sc_q \
+	amoswap_q \
+	lr_b \
+	sc_b \
+	lr_h \
+	sc_h \
 	ctag \
 	creadhpmcounter \
 

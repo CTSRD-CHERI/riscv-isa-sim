@@ -219,12 +219,36 @@ private:
       ? CHERI->cap_store_##type(READ_CREG(regtmp), (regtmp), (imm), (val)) \
       : CHERI->ddc_store_##type(READ_REG(regtmp) + (imm), (val)); \
   })
+#define CHERI_MODE_ACQUIRE_LOAD_RESERVATION(type, reg, imm) ({ \
+    uint64_t regtmp = reg; /* value may have side effects */ \
+    CHERI->get_mode() \
+      ? CHERI->cap_acquire_load_reservation_##type(READ_CREG(regtmp), (regtmp), (imm)) \
+      : CHERI->ddc_acquire_load_reservation_##type(READ_REG(regtmp) + (imm)); \
+  })
+#define CHERI_MODE_CHECK_LOAD_RESERVATION(type, reg, imm, val) ({ \
+    uint64_t regtmp = reg; /* value may have side effects */ \
+    CHERI->get_mode() \
+      ? CHERI->cap_check_load_reservation_##type(READ_CREG(regtmp), (regtmp), (imm), (val)) \
+      : CHERI->ddc_check_load_reservation_##type(READ_REG(regtmp) + (imm), (val)); \
+  })
+#define CHERI_MODE_AMO(type, reg, imm, op) ({ \
+    uint64_t regtmp = reg; /* value may have side effects */ \
+    CHERI->get_mode() \
+      ? CHERI->cap_amo_##type(READ_CREG(regtmp), (regtmp), (imm), (op)) \
+      : CHERI->ddc_amo_##type(READ_REG(regtmp) + (imm), (op)); \
+  })
 #else //CHERI_MERGED_RF
 #define READ_REG(reg) STATE.XPR[reg]
 #define CHERI_MODE_LOAD(type, reg, imm) \
   MMU.load_##type(READ_REG(reg) + imm)
 #define CHERI_MODE_STORE(type, reg, imm, val) \
   MMU.store_##type(READ_REG(reg) + imm, (val))
+#define CHERI_MODE_ACQUIRE_LOAD_RESERVATION(type, reg, imm) \
+  MMU.acquire_load_reservation(READ_REG(reg) + imm)
+#define CHERI_MODE_CHECK_LOAD_RESERVATION(type, reg, imm, val) \
+  MMU.check_load_reservation(READ_REG(reg) + (imm))
+#define CHERI_MODE_AMO(type, reg, imm, op) \
+  MMU.amo_##type(READ_REG(reg) + (imm), (op))
 #endif //CHERI_MERGED_RF
 
 #define READ_FREG(reg) STATE.FPR[reg]
