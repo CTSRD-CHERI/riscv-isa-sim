@@ -41,7 +41,7 @@ class tags_t {
  public:
 
   tags_t() {
-    tags.reserve(N);
+    tags.resize(N);
   }
 
   ~tags_t() {
