@@ -79,7 +79,7 @@ rvfi_dii_t::rvfi_dii_t(uint16_t port) :
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = INADDR_ANY;
+  addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
   addr.sin_port = htons(port);
 
   if (bind(socket_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
