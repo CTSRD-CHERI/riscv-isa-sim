@@ -68,7 +68,6 @@ rvfi_dii_t::rvfi_dii_t(uint16_t port) :
     abort();
   }
 
-  fcntl(socket_fd, F_SETFL, O_NONBLOCK);
   int reuseaddr = 1;
   if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr,
         sizeof(int)) == -1) {
@@ -118,8 +117,6 @@ void rvfi_dii_t::accept()
           errno);
       abort();
     }
-  } else {
-    fcntl(client_fd, F_SETFL, O_NONBLOCK);
   }
 }
 
