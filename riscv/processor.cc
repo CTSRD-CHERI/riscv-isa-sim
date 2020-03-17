@@ -480,8 +480,13 @@ void processor_t::take_trap(trap_t& t, reg_t epc)
 #ifdef ENABLE_CHERI
     if (t.cause() == CAUSE_CHERI_TRAP) {
        cheri_t *cheri = (static_cast<cheri_t*>(get_extension()));
-       fprintf(stderr, "CHERI-DEBUG: PRV %lu = CCSR = 0x%lx\n", (long)state.prv,
-               (long)cheri->get_ccsr());
+       long ccsr = (long) cheri->get_ccsr();
+
+       fprintf(stderr, "CHERI-DEBUG: PRV %lu = CCSR = 0x%lx (cause: %x reg: %s)\n",
+               (long)state.prv,
+               ccsr,
+               (unsigned) ((ccsr >> 5) & 0x1f),
+               cheri_reg_names[(ccsr >> 10) & 0x1f]);
     }
 #endif
 
