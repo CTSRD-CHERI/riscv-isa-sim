@@ -39,3 +39,12 @@ const char* csr_name(int which) {
   }
   return "unknown-csr";
 }
+
+const char* scr_name(int which) {
+  switch (which) {
+    #define DECLARE_CHERI_SCR(name, number)  case number: return #name;
+    #include "encoding.h"
+    #undef DECLARE_CHERI_SCR
+  }
+  return "unknown-scr";
+}
