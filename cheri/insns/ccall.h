@@ -26,7 +26,7 @@ if (!CS1.tag) {
 } else if (new_pc + min_insn_bytes > CS1.top()) {
   CHERI->raise_trap(CAUSE_CHERI_LENGTH_FAULT, insn.cs1());
 } else if (CS1.base() & ~p->pc_alignment_mask()) {
-  CHERI->raise_trap(CAUSE_CHERI_UNALIGNED_BASE, insn.cs1());
+  CHERI->raise_trap(CAUSE_CHERI_UNALIGNED_BASE_FAULT, insn.cs1());
 } else if (new_pc & ~p->pc_alignment_mask()) {
   throw trap_instruction_address_misaligned(new_pc);
 } else {
