@@ -251,6 +251,7 @@ std::vector<disasm_insn_t*> cheri_t::get_disasms(int xlen) {
 
   /* Capability-Modification Instructions */
   DEFINE_INSN(cseal, {&crd, &crs1})
+  DEFINE_INSN(csealentry, {&crd, &crs1})
   DEFINE_INSN(cunseal, {&crd, &crs1})
 
   DEFINE_INSN(candperm, {&crd, &crs1, &xrs2})

@@ -34,6 +34,7 @@ cheri_insn_list = \
 	cgetoffset \
 	cgetflags \
 	cseal \
+	csealentry \
 	cunseal \
 	candperm \
 	csetbounds \

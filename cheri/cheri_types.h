@@ -46,8 +46,9 @@ __extension__ typedef unsigned __int128 cheri_length_t;
 #define CHERI_USER_PERM_SHIFT 15
 #define CHERI_PERM_BITS       12
 
-#define OTYPE_RESERVED_COUNT 1
+#define OTYPE_RESERVED_COUNT 2
 #define OTYPE_UNSEALED 0x3ffffu
+#define OTYPE_SENTRY 0x3fffeu
 #define OTYPE_MAX (0x3ffffu - OTYPE_RESERVED_COUNT)
 
 #define MAX_CHERI_LENGTH ((cheri_length_t)1u << 64)
@@ -97,7 +98,8 @@ struct cheri_reg_t {
 
   uint64_t offset() const { return _cursor - _base; }
   cheri_length_t length() const { return _top - _base; }
-  bool sealed() const { return otype != OTYPE_UNSEALED; }
+  bool sealed() const { return ((otype != OTYPE_UNSEALED) && (otype != OTYPE_SENTRY)); }
+  bool sentry() const { return otype == OTYPE_SENTRY; }
 
   cheri_reg_inmem_t inmem() const;
   void set_bounds(uint64_t base, cheri_length_t top);
