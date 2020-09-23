@@ -250,9 +250,8 @@ std::vector<disasm_insn_t*> cheri_t::get_disasms(int xlen) {
   DEFINE_INSN(cgetaddr, {&xrd, &crs1})
 
   /* Capability-Modification Instructions */
-  DEFINE_INSN(cseal, {&crd, &crs1})
-  DEFINE_INSN(csealentry, {&crd, &crs1})
-  DEFINE_INSN(cunseal, {&crd, &crs1})
+  DEFINE_INSN(cseal, {&crd, &crs1, &crs2})
+  DEFINE_INSN(cunseal, {&crd, &crs1, &crs2})
 
   DEFINE_INSN(candperm, {&crd, &crs1, &xrs2})
   DEFINE_INSN(csetflags, {&crd, &crs1, &xrs2})
@@ -269,6 +268,7 @@ std::vector<disasm_insn_t*> cheri_t::get_disasms(int xlen) {
   DEFINE_INSN(cbuildcap, {&crd, &crs1, &crs2})
   DEFINE_INSN(ccopytype, {&crd, &crs1, &crs2})
   DEFINE_INSN(ccseal, {&crd, &crs1, &crs2})
+  DEFINE_INSN(csealentry, {&crd, &crs1})
 
   /* Pointer-Arithmetic Instructions */
   DEFINE_INSN(ctoptr, {&xrd, &crs1, &crs2_ddc})
