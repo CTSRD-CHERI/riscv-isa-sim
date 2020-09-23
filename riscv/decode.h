@@ -378,7 +378,7 @@ private:
 #define set_pc_and_serialize(x) \
   do { reg_t __npc = (x) & p->pc_alignment_mask(); \
        npc = TO_ARCH_PC(PC_SERIALIZE_AFTER); \
-       STATE.pc = __npc; \
+       STATE.pc = FROM_ARCH_PC(__npc); \
      } while(0)
 
 class wait_for_interrupt_t {};
